@@ -14,8 +14,14 @@ namespace NewsAggregator
         private int findMatch()
         {
             match = Regex.Match(text, keyword);
-            keyword = match.Value;
-            return match.Index;
+            if (match.Success)
+            {
+                keyword = match.Value;
+                return match.Index;
+            } else
+            {
+                return -1;
+            }
         }
     }
 }

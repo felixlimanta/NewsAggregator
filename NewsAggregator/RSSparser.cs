@@ -27,6 +27,7 @@ namespace NewsAggregator
             reader = new Reader();            
 
             parseRss();
+            articles.Sort((a, b) => b.publishDate.CompareTo(a.publishDate));
         }
 
         public void parseRss()
@@ -61,7 +62,7 @@ namespace NewsAggregator
                             link = item.Links[0].Uri,
                             image = article.FrontImage,
                             summary = article.Description.Trim(),
-                            publishDate = item.PublishDate.ToString(),
+                            publishDate = item.PublishDate,
                             content = article.PlainContent
                         });
                         n++;

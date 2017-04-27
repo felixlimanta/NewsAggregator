@@ -8,7 +8,7 @@ namespace NewsAggregator
         public Uri link;
         public Uri image;
         public string summary;
-        public string publishDate;
+        public DateTimeOffset publishDate;
         public string content;
     }
 }
