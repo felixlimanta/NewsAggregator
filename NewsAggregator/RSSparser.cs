@@ -1,117 +1,77 @@
 ﻿using System;
-using System.Xml;
-using System.IO;
+using System.Collections.Generic;
 using System.ServiceModel.Syndication;
-using System.Net;
-using HtmlAgilityPack;
+using ReadSharp;
+using System.Xml;
+using System.Text.RegularExpressions;
 
 namespace NewsAggregator
 {
-    struct rssFeed
-    {
-        public string url;
-        public string article_block;
-    }
-
-    struct rssContents
-    {
-        public string title;
-        public string link;
-        public string summary;
-        public string publishDate;
-        public string contents;
-    }
-
     class RssParser
     {
-        static rssContents[] parseRSS(rssFeed source)
+        public string source { get; private set; }
+        private int limit = int.MaxValue;
+        private Reader reader;
+        public List<RssContents> articles { get; private set; }
+
+        public RssParser(string source): this(source, int.MaxValue)
         {
-            // Read XML Data
-            rssContents[] feed_items = new rssContents[20];
-            using (XmlReader reader = XmlReader.Create(source.url))
-            {
-                int i = 0;
-
-                // Parse XML Data
-                SyndicationFeed feed = SyndicationFeed.Load(reader);
-
-                // Process all parsed items
-                foreach (SyndicationItem item in feed.Items)
-                {
-                    if (i >= 20)
-                        break;
-
-                    // Read parsed XML Data
-                    feed_items[i].title = item.Title.Text;
-                    feed_items[i].summary = item.Summary.Text;
-                    feed_items[i].link = item.Links[0].Uri.ToString();
-                    feed_items[i].publishDate = item.PublishDate.ToString();
-
-                    // Check link validity
-                    if (feed_items[i].link.Contains("http"))
-                    {
-                        string result;
-                        using (var client = new WebClient())
-                        {
-                            result = client.DownloadString(feed_items[i].link);
-                        }
-
-                        HtmlDocument doc_to_parse = new HtmlDocument();
-                        doc_to_parse.LoadHtml(result);
-                        HtmlNode form_node = doc_to_parse.DocumentNode.SelectSingleNode(source.article_block);
-
-                        if (form_node != null)
-                        {
-                            feed_items[i].contents = form_node.InnerText;
-                        }
-                        else
-                        {
-                            feed_items[i].contents = "<No content>";
-                        }
-                    }
-                    else
-                    {
-                        feed_items[i].contents = "Invalid Feed URL";
-                    }
-                    Console.WriteLine(feed_items[i].link + ": " + feed_items[i].title);
-                    i++;
-                }
-            }
-
-            return feed_items;
+            
         }
 
-        static void Main()
+        public RssParser(string source, int limit)
         {
-            //rss source and news content sections
-            rssFeed[] sources = new rssFeed[]
-            {
-                new rssFeed {url = "http://rss.detik.com/index.php/detikcom", article_block = "//div[@class='detail_text']"},
-                new rssFeed {url = "http://rss.vivanews.com/get/all", article_block = "//span[@itemprop='description']"},
-                new rssFeed {url = "http://www.antaranews.com/rss/terkini", article_block = "//div[@id='content_news']"}
-            };
+            this.source = source;
+            this.limit = limit;
+            articles = new List<RssContents>();
+            reader = new Reader();            
 
-            //variables
-            int i = 0;
-            string[] to_write = new string[100];
+            parseRss();
+        }
 
-            foreach (rssFeed source in sources)
+        public void parseRss()
+        {
+            using (XmlReader xmlReader = XmlReader.Create(source))
             {
-                rssContents[] feedItems = parseRSS(source);
-                foreach (rssContents feedItem in feedItems)
+                try
                 {
-                    to_write[i++] = feedItem.title + "\n" +
-                                    feedItem.summary + "\n" +
-                                    feedItem.link + "\n" +
-                                    feedItem.publishDate + "\n\n" +
-                                    feedItem.contents + "\n===============================\n";
+                    // Parse XML Data
+                    SyndicationFeed feed = SyndicationFeed.Load(xmlReader);
+
+                    // Process all parsed items
+                    int n = 0;
+                    foreach (SyndicationItem item in feed.Items)
+                    {
+                        if (n > limit)
+                            break;
+
+                        Article article = reader.Read(item.Links[0].Uri).Result;
+                        if (article.ContentExtracted == false)
+                        {
+                            article.PlainContent =
+                                Regex.Replace(
+                                    Regex.Replace(article.Content, "<[^>]*(>|$)", string.Empty),
+                                    "[ \t\r\n]+",
+                                    " ").Trim();
+                        }
+
+                        articles.Add(new RssContents
+                        {
+                            title = article.Title.Trim(),
+                            link = item.Links[0].Uri,
+                            image = article.FrontImage,
+                            summary = article.Description.Trim(),
+                            publishDate = item.PublishDate.ToString(),
+                            content = article.PlainContent
+                        });
+                        n++;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Cannot read RSS from ", source);
                 }
             }
-
-            //write all gathered data
-            File.WriteAllLines(@"E:\out.txt", to_write);
-            Console.WriteLine("main RSS successfully read. Press any key to continue.");
-            Console.ReadLine();
         }
     }
 }
