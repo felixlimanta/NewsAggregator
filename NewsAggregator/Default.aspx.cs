@@ -29,7 +29,7 @@ namespace NewsAggregator
                 rssParsers.Add(rss);
             }
 
-            List<string> toWrite = new List<String>();
+            /*List<string> toWrite = new List<String>();
             foreach (RssParser rss in rssParsers)
             {
                 foreach (RssContents article in rss.articles)
@@ -44,6 +44,8 @@ namespace NewsAggregator
                     toWrite.Add(temp);
                 }
             }
+
+            File.WriteAllLines(@"E:\articles.txt", toWrite.ToArray());*/
         }
 
         protected void PatternMatch(object sender, EventArgs e)
@@ -66,16 +68,86 @@ namespace NewsAggregator
 
             List<RssMatchObject> result = new List<RssMatchObject>();
             foreach (RssParser rssParser in rssParsers)
-            {                                
+            {
                 RssMatcher rm = new RssMatcher(rssParser.articles, s, type);
                 result.AddRange(rm.searchResults);
             }
 
             foreach (RssMatchObject res in result)
             {
+                OutSpan.InnerHtml += "<img src=\"";
+                OutSpan.InnerHtml += res.article.image.ToString();
+                OutSpan.InnerHtml += "\" border=\"0\" height=\"100\" width=\"150\">";
+                OutSpan.InnerHtml += "<br /> <a href=\"";
+                OutSpan.InnerHtml += OutSpan.InnerHtml += res.article.link.ToString();
+                OutSpan.InnerHtml += "\">";
                 OutSpan.InnerHtml += res.article.title;
-                OutSpan.InnerHtml += "<br />";
+                OutSpan.InnerHtml += "</a ><br /> <i>";
+                int i = 0;
+                if (res.summaryFoundIndex == -1)
+                {
+                    OutSpan.InnerHtml += res.article.summary;
+                }
+                else
+                {
+                    while (i != res.summaryFoundIndex)
+                    {
+                        OutSpan.InnerHtml += res.article.summary[i];
+                        i++;
+                    }
+                    OutSpan.InnerHtml += "<u>";
+                    int j = 1;
+                    while (j <= s.Length)
+                    {
+                        OutSpan.InnerHtml += res.article.summary[i];
+                        i++;
+                        j++;
+                    }
+                    OutSpan.InnerHtml += "</u>";
+                    while (i < res.article.summary.Length)
+                    {
+                        OutSpan.InnerHtml += res.article.summary[i];
+                        i++;
+                    }
+                }
                 OutSpan.InnerHtml += res.article.summary;
+                OutSpan.InnerHtml += "</i> <br />";
+                if (res.contentFoundIndex == -1)
+                {
+                    OutSpan.InnerHtml += res.article.content;
+                }
+                else
+                {
+                    i = res.contentFoundIndex;
+                    int j;
+                    if (i > 10)
+                    {
+                        j = i - 10;
+                        OutSpan.InnerHtml += "..";
+                        while (j != i)
+                        {
+                            OutSpan.InnerHtml += res.article.content[j];
+                            j++;
+                        }
+                    }
+                    OutSpan.InnerHtml += "<u>";
+                    j = 1;
+                    while (j <= s.Length)
+                    {
+                        OutSpan.InnerHtml += res.article.content[i];
+                        i++;
+                        j++;
+                    }
+                    OutSpan.InnerHtml += "</u>";
+                    j = 0;
+                    while (j < 10 && i < res.article.content.Length)
+                    {
+                        OutSpan.InnerHtml += res.article.content[i];
+                        i++;
+                        j++;
+                    }
+                    OutSpan.InnerHtml += "..";
+                }
                 OutSpan.InnerHtml += "<br />";
                 OutSpan.InnerHtml += "<br />";
             }
