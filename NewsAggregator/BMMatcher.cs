@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace NewsAggregator
 {
@@ -14,9 +15,9 @@ namespace NewsAggregator
 
         private void buildLast()
         {
-            last = new int[128];
+            last = new int[256];
 
-            for (int i = 0; i < 128; ++i)
+            for (int i = 0; i < 256; ++i)
             {
                 last[i] = -1;
             }
@@ -38,6 +39,8 @@ namespace NewsAggregator
                 return -1;
             }
 
+
+
             int j = m - 1;
             do
             {
@@ -55,7 +58,16 @@ namespace NewsAggregator
                 }
                 else
                 {
-                    int lo = last[text[i]];
+                    Trace.WriteLine(text[i]);
+                    Trace.WriteLine((int)text[i]);
+                    int lo;
+                    try
+                    {
+                        lo = last[text[i]];
+                    } catch (IndexOutOfRangeException)
+                    {
+                        lo = -1;
+                    }
                     i += m - Math.Min(j, lo + 1);
                     j = m - 1;
                 }

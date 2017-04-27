@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace NewsAggregator
 {
@@ -31,6 +32,7 @@ namespace NewsAggregator
         {
             foreach (RssContents article in articles)
             {
+                Trace.WriteLine("Searching {0}", article.link.ToString());
                 RssMatchObject result = new RssMatchObject
                 {
                     article = article,
@@ -38,9 +40,15 @@ namespace NewsAggregator
                     summaryFoundIndex = matchString(article.summary, keyword),
                     contentFoundIndex = matchString(article.content, keyword)
                 };
+                Trace.WriteLine("Title {0}", result.titleFoundIndex.ToString());
+                Trace.WriteLine("Title {0}", result.summaryFoundIndex.ToString());
+                Trace.WriteLine("Title {0}", result.contentFoundIndex.ToString());
 
-                if (result.titleFoundIndex * result.contentFoundIndex * result.summaryFoundIndex >= 0)
+                if (result.titleFoundIndex != -1 ||
+                    result.summaryFoundIndex != -1 ||
+                    result.contentFoundIndex != -1)
                 {
+                    Trace.WriteLine("Found {0}", article.link.ToString());
                     searchResults.Add(result);
                 }
             }
