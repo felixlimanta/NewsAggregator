@@ -16,9 +16,9 @@ namespace NewsAggregator
         {
             string[] sources =
             {
-                //"http://rss.detik.com/index.php/detikcom",
-                //"http://rss.vivanews.com/get/all",
-                //"http://www.antaranews.com/rss/terkini",
+                "http://rss.detik.com/index.php/detikcom",
+                "http://rss.vivanews.com/get/all",
+                "http://www.antaranews.com/rss/terkini",
                 "https://rss.tempo.co/index.php/teco/news/feed/start/0/"
             };
 
@@ -44,8 +44,6 @@ namespace NewsAggregator
                     toWrite.Add(temp);
                 }
             }
-
-            File.WriteAllLines(@"E:\articles.txt", toWrite.ToArray());
         }
 
         protected void PatternMatch(object sender, EventArgs e)
