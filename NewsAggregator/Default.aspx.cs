@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -15,9 +16,9 @@ namespace NewsAggregator
         {
             string[] sources =
             {
-                "http://rss.detik.com/index.php/detikcom",
-                "http://rss.vivanews.com/get/all",
-                "http://www.antaranews.com/rss/terkini",
+                //"http://rss.detik.com/index.php/detikcom",
+                //"http://rss.vivanews.com/get/all",
+                //"http://www.antaranews.com/rss/terkini",
                 "https://rss.tempo.co/index.php/teco/news/feed/start/0/"
             };
 
@@ -27,6 +28,24 @@ namespace NewsAggregator
                 RssParser rss = new RssParser(source, 20);
                 rssParsers.Add(rss);
             }
+
+            List<string> toWrite = new List<String>();
+            foreach (RssParser rss in rssParsers)
+            {
+                foreach (RssContents article in rss.articles)
+                {
+                    string temp =
+                        article.title + "\n" +
+                        article.link + "\n" +
+                        article.image + "\n" +
+                        article.summary + "\n" +
+                        article.publishDate + "\n" +
+                        article.content + "\n";
+                    toWrite.Add(temp);
+                }
+            }
+
+            File.WriteAllLines(@"E:\articles.txt", toWrite.ToArray());
         }
 
         protected void PatternMatch(object sender, EventArgs e)
