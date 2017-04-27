@@ -50,6 +50,7 @@ namespace NewsAggregator
 
         protected void PatternMatch(object sender, EventArgs e)
         {
+            OutSpan.InnerHtml = "";
             string s = key.Text;
             int type;
             if (b.Checked)
@@ -74,11 +75,11 @@ namespace NewsAggregator
 
             foreach (RssMatchObject res in result)
             {
-                OutSpan.InnerText = res.article.title;
-                OutSpan.InnerHtml = "<br />";
-                OutSpan.InnerText = res.article.summary;
-                OutSpan.InnerHtml = "<br />";
-                OutSpan.InnerHtml = "<br />";
+                OutSpan.InnerHtml += res.article.title;
+                OutSpan.InnerHtml += "<br />";
+                OutSpan.InnerHtml += res.article.summary;
+                OutSpan.InnerHtml += "<br />";
+                OutSpan.InnerHtml += "<br />";
             }
         }
     }
